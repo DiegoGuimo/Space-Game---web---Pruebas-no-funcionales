@@ -86,7 +86,7 @@ stages:
     steps:
     - script: echo "Validation successful"
 
-- stage: 'Dev'
+- stage: 'Deploy'
   displayName: 'Deploy to the dev environment'
   dependsOn: Build
   jobs:
