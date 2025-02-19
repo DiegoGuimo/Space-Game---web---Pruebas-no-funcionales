@@ -86,9 +86,6 @@ stages:
     steps:
     - script: echo "Validation successful"
 
-
-
-
 - stage: 'Deploy'
   displayName: 'Deploy the web application'
   dependsOn: Build
