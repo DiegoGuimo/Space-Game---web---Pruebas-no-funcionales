@@ -171,42 +171,31 @@ stages:
               appName: '$(WebAppNameStaging)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
   - job: RunLoadTests
-    dependsOn: Deploy
-    displayName: 'Run load tests'
-    pool:
-      name: 'RetoAzure'
-      demands:
-        - agent.name -equals MyAgent
-    variables:
-    - group: Release
-    steps:
-    - script: |
-        powershell -Command "& {Invoke-WebRequest -Uri 'https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$(jmeterVersion).tgz' -OutFile 'apache-jmeter-$(jmeterVersion).tgz'}"
-        tar -xzf apache-jmeter-$(jmeterVersion).tgz
-      displayName: 'Install Apache JMeter'
+  dependsOn: Deploy
+  displayName: 'Run load tests'
+  pool:
+    name: 'RetoAzure'
+    demands:
+      - agent.name -equals MyAgent
+  variables:
+  - group: Release
+  steps:
+  - script: |
+      powershell -Command "& {Invoke-WebRequest -Uri 'https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$(jmeterVersion).tgz' -OutFile 'apache-jmeter-$(jmeterVersion).tgz'}"
+      tar -xzf apache-jmeter-$(jmeterVersion).tgz
+    displayName: 'Install Apache JMeter'
 
-    - script: apache-jmeter-$(jmeterVersion)/bin/./jmeter -n -t LoadTest.jmx -o Results.xml -Jhostname=$(STAGING_HOSTNAME)
-      displayName: 'Run Load tests'
+  - script: apache-jmeter-$(jmeterVersion)/bin/./jmeter -n -t LoadTest.jmx -o Results.xml -Jhostname=$(STAGING_HOSTNAME)
+    displayName: 'Run Load tests'
 
-    - powershell: |
-        # Cargar el archivo XSLT
-        $xslt = New-Object System.Xml.Xsl.XslCompiledTransform
-        $xslt.Load("JMeter2JUnit.xsl")
+  - script: |
+      wsl sudo apt-get update
+      wsl sudo apt-get install -y xsltproc
+      wsl xsltproc JMeter2JUnit.xsl Results.xml > JUnit.xml
+    displayName: 'Transform JMeter output to JUnit (WSL)'
 
-        # Cargar el archivo XML de resultados de JMeter
-        $xml = New-Object System.Xml.XmlDocument
-        $xml.Load("Results.xml")
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: JUnit.xml
 
-        # Crear un escritor para el archivo JUnit de salida
-        $writer = [System.Xml.XmlWriter]::Create("JUnit.xml")
-
-        # Aplicar la transformación XSLT
-        $xslt.Transform($xml, $writer)
-
-        # Cerrar el escritor
-        $writer.Close()
-      displayName: 'Transform JMeter output to JUnit (PowerShell)'
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: JUnit
-        testResultsFiles: JUnit.xml
