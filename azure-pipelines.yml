@@ -181,7 +181,7 @@ stages:
     - group: Release
     steps:
     - script: |
-        powershell -Command "Invoke-WebRequest -Uri 'https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$(jmeterVersion).tgz'"
+        powershell -Command "& {Invoke-WebRequest -Uri 'https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$(jmeterVersion).tgz' -OutFile 'apache-jmeter-$(jmeterVersion).tgz'}"
         tar -xzf apache-jmeter-$(jmeterVersion).tgz
       displayName: 'Install Apache JMeter'
     - script: apache-jmeter-$(jmeterVersion)/bin/./jmeter -n -t LoadTest.jmx -o Results.xml -Jhostname=$(STAGING_HOSTNAME)
