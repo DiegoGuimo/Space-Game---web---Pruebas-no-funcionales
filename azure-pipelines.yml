@@ -100,6 +100,7 @@ stages:
         - agent.name -equals MyAgent
     environment: dev
     variables:
+
     - group: Release
     strategy:
       runOnce:
@@ -107,8 +108,10 @@ stages:
           steps:
           - download: current
             artifact: drop
+          
           - script: echo "WebAppNameDev: $(WebAppNameDev)"
             displayName: 'Print Web App Name'
+
           - task: AzureWebApp@1
             displayName: 'Azure App Service Deploy: website'
             inputs:
