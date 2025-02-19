@@ -75,6 +75,16 @@ stages:
 
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
+    
+- stage: 'Dev'
+  displayName: 'Deploy to the dev environment'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Validate
+    displayName: 'Validation Job'
+    steps:
+    - script: echo "Validation successful"
 
 - stage: 'Dev'
   displayName: 'Deploy to the dev environment'
