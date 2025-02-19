@@ -109,7 +109,8 @@ stages:
           - download: current
             artifact: drop
           
-          - script: echo "WebAppNameDev: $(WebAppNameDev)"
+          - script: |
+              echo "WebAppNameDev: $(WebAppNameDev)"
             displayName: 'Print Web App Name'
 
           - task: AzureWebApp@1
